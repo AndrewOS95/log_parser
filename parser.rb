@@ -1,4 +1,4 @@
-require "optparse"
+require 'optparse'
 class Parser
   def self.read_and_validate(file_path)
     @returns = ""
@@ -32,19 +32,51 @@ class Parser
     end
     @returns
   end
+
+  def self.unique_endpoints
+    h = @endpoints.zip(@addresses)
+    h.each {|item| @counts[item] += 1 }
+    h = h.uniq
+    result = h.inject(Hash.new(0)) {|hash, element|
+      hash[element[0]] += 1
+      hash
+    }
+    res = result.sort_by {|key, val| val}.reverse
+    res.each do |i|
+      @returns += "There were #{i[1]} unique visits for '#{i[0]}' endpoint\n"
+    end
+    @returns
+  end
+
+  def self.get_ips
+    @addresses.each { |item| @counts[item] += 1 }
+    item = @counts.sort_by {|key, value| value}.reverse
+    item.each do |i|
+      @returns +=  "There were #{i[1]} visits from ip: '#{i[0]}'\n"
+    end
+    @returns
+  end
 end
 
+  opts = {}
 
-opts = {}
-OptionParser.new do |opt|
-  opt.on('-f', '--file FILE') {|o| opts[:file] = o }
-  opt.on('-e', '--get_endpoints')
-end.parse!(into: opts)
+  OptionParser.new do |opt|
+    opt.on('-f', '--file FILE') {|o| opts[:file] = o }
+    opt.on('-e', '--get_endpoints')
+    opt.on('-u', '--get_unique_endpoints')
+    opt.on('-i', '--get_ips')
+  end.parse!(into: opts)
 
-if opts[:file] && opts[:get_endpoints]
-  Parser.read_and_validate(opts[:file])
-  Parser.transform_data
-  puts Parser.read_endpoints
-else
-  puts "Please import data through a file"
-end
+  if opts[:file]
+    Parser.read_and_validate(opts[:file])
+    Parser.transform_data
+    if opts[:get_endpoints]
+      puts Parser.read_endpoints
+    elsif opts[:get_ips]
+      puts Parser.get_ips
+    elsif opts[:get_unique_endpoints]
+      puts Parser.unique_endpoints
+    end
+  else
+    puts "Please import data through a file"
+  end
