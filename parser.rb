@@ -1,23 +1,23 @@
 require 'optparse'
 class Parser
   def self.read_and_validate(file_path)
-    @returns = ""
+    @final_value = ""
     @file = File.open(file_path, "r")
-    @arr = []
+    @data_arr = []
     @counts = Hash.new(0)
     regex = /^(\/[a-z0-9_]+){1,} [0-9]{3}.[0-9]{3}.[0-9]{3}.[0-9]{3}/
     @file.each do |row|
       if row =~ regex
-        @arr << row
+        @data_arr << row
       end
     end
-    return @arr
+    return @data_arr
   end
 
   def self.transform_data
     @endpoints = []
     @addresses = []
-    @arr.each do |item|
+    @data_arr.each do |item|
         @endpoints << item.split(' ')[0]
         @addresses << item.split(' ')[1]
     end
@@ -28,9 +28,9 @@ class Parser
     @endpoints.each { |item| @counts[item] += 1 }
     item = @counts.sort_by {|key, value| value}.reverse
     item.each do |i|
-       @returns += "There were #{i[1]} visits for '#{i[0]}' endpoint\n"
+       @final_value += "There were #{i[1]} visits for '#{i[0]}' endpoint\n"
     end
-    @returns
+    @final_value
   end
 
   def self.unique_endpoints
@@ -43,18 +43,18 @@ class Parser
     }
     res = result.sort_by {|key, val| val}.reverse
     res.each do |i|
-      @returns += "There were #{i[1]} unique visits for '#{i[0]}' endpoint\n"
+      @final_value += "There were #{i[1]} unique visits for '#{i[0]}' endpoint\n"
     end
-    @returns
+    @final_value
   end
 
   def self.get_ips
     @addresses.each { |item| @counts[item] += 1 }
     item = @counts.sort_by {|key, value| value}.reverse
     item.each do |i|
-      @returns +=  "There were #{i[1]} visits from ip: '#{i[0]}'\n"
+      @final_value +=  "There were #{i[1]} visits from ip: '#{i[0]}'\n"
     end
-    @returns
+    @final_value
   end
 end
 
